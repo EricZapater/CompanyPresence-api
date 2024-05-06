@@ -2,9 +2,10 @@ package models
 
 type User struct {
 	ID        string `json:"ID"`
-	Username  string `json:"Username"`
-	Password  string `json:"Password"`
+	Name      string `json:"Name"`
+	Surname   string `json:"Surname"`
 	Email     string `json:"Email"`
+	Password  string `json:"Password"`
 	IpAddress string `json:"IpAddress"`
 	Active    bool   `json:"Active"`
 }

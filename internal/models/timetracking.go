@@ -8,4 +8,5 @@ type TimeTracking struct {
 	WorkingDate time.Time `json:"WorkingDate"`
 	ClockIn time.Time `json:"ClockIn"`
 	ClockOut time.Time `json:"ClockOut"`
+	IpAddress string `json:"IpAddress"`
 }
