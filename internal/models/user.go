@@ -7,5 +7,6 @@ type User struct {
 	Email     string `json:"Email"`
 	Password  string `json:"Password"`
 	IpAddress string `json:"IpAddress"`
+	IsAdmin   bool   `json:"IsAdmin"`
 	Active    bool   `json:"Active"`
 }

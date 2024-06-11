@@ -4,18 +4,17 @@ import (
 	"companypresence-api/internal/database"
 	"companypresence-api/internal/models"
 	"context"
-	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type TimeTrackingRepository struct {
-	db *sql.DB
+	//db *sql.DB
 }
 
-func NewTimeTrackingRepository(db *sql.DB) *TimeTrackingRepository {
-	return &TimeTrackingRepository{db: db}
+func NewTimeTrackingRepository() *TimeTrackingRepository {
+	return &TimeTrackingRepository{}
 }
 
 func (r *TimeTrackingRepository) CreateTimeTracking(ctx context.Context, timetracking models.TimeTracking)error{
@@ -28,7 +27,7 @@ func (r *TimeTrackingRepository) CreateTimeTracking(ctx context.Context, timetra
 	if err != nil {
 		return err
 	}
-	userRepository := NewUserRepository(r.db)
+	userRepository := NewUserRepository()
 	user,err := userRepository.GetUserById(ctx, timetracking.UserID)
 	if err != nil{
 		return err

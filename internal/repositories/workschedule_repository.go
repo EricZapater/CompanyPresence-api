@@ -4,7 +4,6 @@ import (
 	"companypresence-api/internal/database"
 	"companypresence-api/internal/models"
 	"context"
-	"database/sql"
 
 	_ "github.com/lib/pq"
 
@@ -12,11 +11,11 @@ import (
 )
 
 type WorkScheduleRepository struct {
-	db *sql.DB
+	
 }
 
-func NewWorkScheduleRepository(db *sql.DB) *WorkScheduleRepository {
-	return &WorkScheduleRepository{db: db}
+func NewWorkScheduleRepository() *WorkScheduleRepository {
+	return &WorkScheduleRepository{}
 }
 
 func (r *WorkScheduleRepository)CreateWorkSchedule(ctx context.Context, workschedule models.WorkSchedule)error{
@@ -117,5 +116,16 @@ func (r *WorkScheduleRepository)UpdateWorkSchedule(ctx context.Context, worksche
 				FridayStartTime = $6
 			WHERE id = $7`
 	_, err = db.ExecContext(ctx, sql, workschedule.UserID, workschedule.NormalWorkingHours, workschedule.NormalStartTime, workschedule.NormalNoonRest, workschedule.FridayWorkingHours, workschedule.FridayStartTime, workschedule.ID)
+	return err
+}
+
+func (r *WorkScheduleRepository)DeleteWorkSchedule(ctx context.Context, id string)error{
+	db, err := database.NewDatabase()
+	if err != nil {
+		return err
+	}
+	defer db.Close();
+	sql := `DELETE FROM public.workschedules WHERE id = $1`
+	_, err = db.ExecContext(ctx, sql, id)
 	return err
 }

@@ -6,6 +6,7 @@ CREATE TABLE users(
 	Email varchar(250) not null,
 	Password varchar(250) not null,
 	IpAddress varchar (50) not null,
+	IsAdmin bool,
 	Active bool
 );
 create unique index uq_users_email on users(email);
@@ -30,4 +31,4 @@ CREATE TABLE timetrackings (
 	ClockOut time,
 	IpAddress varchar(50) not null
 );
-create index idx_timetrackings_userid on timetracking(userid);
+create index idx_timetrackings_userid on timetrackings(userid);

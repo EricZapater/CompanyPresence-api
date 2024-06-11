@@ -4,7 +4,6 @@ import (
 	"companypresence-api/internal/database"
 	"companypresence-api/internal/models"
 	"context"
-	"database/sql"
 
 	_ "github.com/lib/pq"
 
@@ -13,11 +12,10 @@ import (
 )
 
 type UserRepository struct {
-	db *sql.DB
 }
 
-func NewUserRepository(db *sql.DB) *UserRepository{
-	return &UserRepository{db: db}
+func NewUserRepository() *UserRepository{
+	return &UserRepository{}
 }
 
 func (r *UserRepository)CreateUSer(ctx context.Context, user *models.User) error{
@@ -34,9 +32,9 @@ func (r *UserRepository)CreateUSer(ctx context.Context, user *models.User) error
 	if err != nil {
 		return err
 	}
-	sql := `INSERT INTO public.users(ID, name, surname, email, password, ipaddress, active)
-			VALUES($1, $2, $3, $4, $5, $6, $7)`
-	_, err = db.ExecContext(ctx, sql, ID, user.Name, user.Surname, user.Email, password, user.IpAddress, user.Active)
+	sql := `INSERT INTO public.users(ID, name, surname, email, password, ipaddress, isadmin, active)
+			VALUES($1, $2, $3, $4, $5, $6, $7, $8)`
+	_, err = db.ExecContext(ctx, sql, ID, user.Name, user.Surname, user.Email, password, user.IpAddress, user.IsAdmin, user.Active)
 	if err != nil {
 		return err
 	}
@@ -50,10 +48,10 @@ func (r *UserRepository)GetUserById(ctx context.Context, id string)(user models.
 	}
 	defer db.Close();
 
-	sql := `SELECT ID, name, surname, email, password, ipaddress, active FROM public.users where ID = $1`
+	sql := `SELECT ID, name, surname, email, password, ipaddress, isadmin, active FROM public.users where ID = $1`
 
 	row := db.QueryRowContext(ctx, sql, id)
-	err = row.Scan(&user.ID, &user.Name, &user.Surname, &user.Email, &user.Password, &user.IpAddress, &user.Active)
+	err = row.Scan(&user.ID, &user.Name, &user.Surname, &user.Email, &user.Password, &user.IpAddress,&user.IsAdmin, &user.Active)
 	if err !=nil {
 		return user, err
 	}
@@ -67,22 +65,17 @@ func (r *UserRepository)GetUserByMail(ctx context.Context, mail string)(user mod
 	}
 	defer db.Close();
 
-	sql := `SELECT ID, name, surname, email, password, ipaddress, active FROM public.users where mail = $1`
+	sql := `SELECT ID, name, surname, email, password, ipaddress, isadmin, active FROM public.users where email = $1`
 
 	row := db.QueryRowContext(ctx, sql, mail)
-	err = row.Scan(&user.ID, &user.Name, &user.Surname, &user.Email, &user.Password, &user.IpAddress, &user.Active)
+	err = row.Scan(&user.ID, &user.Name, &user.Surname, &user.Email, &user.Password, &user.IpAddress, &user.IsAdmin, &user.Active)
 	if err !=nil {
 		return user, err
 	}
 	return user, nil
 }
 
-func (r *UserRepository)GetActiveUsers(ctx context.Context)(users []models.User, err error){	 
-	return getUsers(ctx, true)
-}
-func (r *UserRepository)GetAllUsers(ctx context.Context)(users []models.User, err error){
-	return getUsers(ctx, false)
-}
+
 func (r *UserRepository)UpdateUser(ctx context.Context, user *models.User)error{
 	db, err := database.NewDatabase()
 	if err != nil {
@@ -95,9 +88,10 @@ func (r *UserRepository)UpdateUser(ctx context.Context, user *models.User)error{
 				Email = $3,
 				Password = $4,
 				IpAddress = $5,
-				Active = $6
-			WHERE ID = $7`
-	_, err = db.ExecContext(ctx, sql, user.Name, user.Surname, user.Email, user.Password, user.IpAddress, user.Active, user.ID)
+				IsAdmin = $6,
+				Active = $7
+			WHERE ID = $8`
+	_, err = db.ExecContext(ctx, sql, user.Name, user.Surname, user.Email, user.Password, user.IpAddress,user.IsAdmin, user.Active, user.ID)
 	return err
 }
 func (r *UserRepository)DeleteUser(ctx context.Context, id string) error{
@@ -115,7 +109,7 @@ func (r *UserRepository)DeleteUser(ctx context.Context, id string) error{
 	return err
 }
 
-func getUsers(ctx context.Context, active bool)(users []models.User, err error){
+func (r *UserRepository)GetUsers(ctx context.Context, active bool)(users []models.User, err error){
 	db, err := database.NewDatabase()
 	if err != nil {
 		return users, err
@@ -123,9 +117,9 @@ func getUsers(ctx context.Context, active bool)(users []models.User, err error){
 	defer db.Close();
 	var sql string;
 	if active {
-		sql = `SELECT ID, name, surname, email, password, ipaddress, active FROM public.users WHERE active = true`
+		sql = `SELECT ID, name, surname, email, password, ipaddress, isadmin, active FROM public.users WHERE active = true`
 	}else{
-		sql = `SELECT ID, name, surname, email, password, ipaddress, active FROM public.users`
+		sql = `SELECT ID, name, surname, email, password, ipaddress, isadmin, active FROM public.users`
 	}
 	
 
@@ -137,7 +131,7 @@ func getUsers(ctx context.Context, active bool)(users []models.User, err error){
 	}
 	defer rows.Close()
 	for rows.Next(){
-		err = rows.Scan(&user.ID, &user.Name, &user.Surname, &user.Email, &user.Password, &user.IpAddress, &user.Active)
+		err = rows.Scan(&user.ID, &user.Name, &user.Surname, &user.Email, &user.Password, &user.IpAddress, &user.IsAdmin, &user.Active)
 		if err != nil {
 			return nil, err
 		}
